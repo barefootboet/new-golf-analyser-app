@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="TrackMan Golf Swing Analyzer - Get personalized golf swing analysis based on your launch monitor data">
+    <meta name="theme-color" content="#1e3c72">
+    <title>TrackMan Golf Swing Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 15px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding: 30px;
+            }
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        @media (min-width: 768px) {
+            .header p {
+                font-size: 14px;
+            }
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .content {
+                padding: 30px;
+            }
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            color: #0f2027;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        @media (min-width: 768px) {
+            .section-header h2 {
+                font-size: 20px;
+            }
+        }
+
+        .section-header p {
+            color: #666;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        @media (min-width: 768px) {
+            .section-header p {
+                font-size: 14px;
+            }
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        @media (min-width: 480px) {
+            .profile-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .profile-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                padding: 20px;
+            }
+        }
+
+        .club-selector {
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .club-selector {
+                margin-bottom: 30px;
+            }
+        }
+
+        .required-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .required-note p {
+            margin: 0;
+            color: #856404;
+            font-size: 13px;
+        }
+
+        @media (min-width: 768px) {
+            .required-note p {
+                font-size: 14px;
+            }
+        }
+
+        .required-star {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .club-selector label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .club-selector select {
+            width: 100%;
+            padding: 14px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"%3E%3Cpath fill="%23333" d="M6 8L0 0h12z"/%3E%3C/svg%3E');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+
+        .club-selector select:focus {
+            outline: none;
+            border-color: #2c5364;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 480px) {
+            .input-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .input-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            padding: 14px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            -webkit-appearance: none;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2c5364;
+        }
+
+        .input-group input.error {
+            border-color: #e74c3c;
+        }
+
+        .input-group small {
+            margin-top: 4px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .input-group .error-message {
+            margin-top: 4px;
+            color: #e74c3c;
+            font-size: 12px;
+            display: none;
+        }
+
+        .input-group input.error + small + .error-message,
+        .input-group input.error ~ .error-message {
+            display: block;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0f2027, #2c5364);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .analyze-btn {
+                font-size: 18px;
+            }
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 83, 100, 0.4);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .results {
+                margin-top: 30px;
+                padding: 25px;
+            }
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results h2 {
+            color: #0f2027;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .results h2 {
+                font-size: 22px;
+            }
+        }
+
+        .priority-box {
+            background: white;
+            border-left: 4px solid #e74c3c;
+            padding: 18px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 768px) {
+            .priority-box {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .priority-box h3 {
+            color: #e74c3c;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .priority-box h3 {
+                font-size: 18px;
+            }
+        }
+
+        .priority-box p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        @media (min-width: 768px) {
+            .priority-box p {
+                font-size: 15px;
+            }
+        }
+
+        .target-data {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .target-data h3 {
+            color: #2e7d32;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .target-data h3 {
+                font-size: 16px;
+            }
+        }
+
+        .target-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        @media (min-width: 480px) {
+            .target-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+
+        @media (min-width: 768px) {
+            .target-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+        }
+
+        .target-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .target-item .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        @media (min-width: 768px) {
+            .target-item .label {
+                font-size: 12px;
+            }
+        }
+
+        .target-item .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        @media (min-width: 768px) {
+            .target-item .value {
+                font-size: 18px;
+            }
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .warning p {
+            color: #856404;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Wedge loft input styling */
+        .wedge-loft-input {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+
+        @media (min-width: 768px) {
+            .wedge-loft-input {
+                margin-bottom: 30px;
+            }
+        }
+
+        /* Session notes styling */
+        .session-notes {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @media (min-width: 768px) {
+            .session-notes {
+                margin-top: 30px;
+                padding: 25px;
+            }
+        }
+
+        .session-notes h3 {
+            color: #0f2027;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        @media (min-width: 768px) {
+            .session-notes h3 {
+                font-size: 20px;
+            }
+        }
+
+        .session-notes textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+
+        .session-notes textarea:focus {
+            outline: none;
+            border-color: #2c5364;
+        }
+
+        .save-notes-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 12px;
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            touch-action: manipulation;
+        }
+
+        @media (min-width: 768px) {
+            .save-notes-btn {
+                font-size: 17px;
+            }
+        }
+
+        .save-notes-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .save-notes-btn:active {
+            transform: translateY(0);
+        }
+
+        /* History button styling */
+        .history-btn {
+            padding: 12px 24px;
+            background: white;
+            color: #2c5364;
+            border: 2px solid #2c5364;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        @media (min-width: 768px) {
+            .history-btn {
+                padding: 14px 28px;
+                font-size: 16px;
+            }
+        }
+
+        .history-btn:hover {
+            background: #2c5364;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 83, 100, 0.3);
+        }
+
+        /* History section styling */
+        .history-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @media (min-width: 768px) {
+            .history-section {
+                padding: 25px;
+            }
+        }
+
+        .history-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .history-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .history-header h2 {
+            color: #0f2027;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        @media (min-width: 768px) {
+            .history-header h2 {
+                font-size: 22px;
+            }
+        }
+
+        .history-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 480px) {
+            .history-controls {
+                flex-direction: row;
+                gap: 12px;
+            }
+        }
+
+        .history-controls select {
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        @media (min-width: 480px) {
+            .history-controls select {
+                flex: 0 1 200px;
+            }
+        }
+
+        .clear-history-btn {
+            padding: 10px 16px;
+            background: white;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .clear-history-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .history-item {
+            background: white;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2c5364;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 768px) {
+            .history-item {
+                padding: 20px;
+            }
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .history-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f2027;
+        }
+
+        @media (min-width: 768px) {
+            .history-item-title {
+                font-size: 18px;
+            }
+        }
+
+        .history-item-date {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .history-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        @media (min-width: 480px) {
+            .history-metrics {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .history-metrics {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+        }
+
+        .history-metric {
+            font-size: 13px;
+        }
+
+        .history-metric strong {
+            color: #2c5364;
+        }
+
+        .history-notes {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        .history-notes strong {
+            display: block;
+            color: #0f2027;
+            margin-bottom: 6px;
+        }
+
+        .delete-session-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: white;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .delete-session-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Loading state */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛳ TrackMan Swing Analyzer</h1>
+            <p>Get focused improvement tips based on your launch monitor data</p>
+        </div>
+
+        <div class="content">
+            <div class="section-header">
+                <h2>👤 Your Profile</h2>
+                <p>Help us personalize your swing analysis</p>
+            </div>
+
+            <div class="profile-grid">
+                <div class="input-group">
+                    <label for="name">Name (Optional)</label>
+                    <input type="text" id="name" placeholder="Your name">
+                </div>
+
+                <div class="input-group">
+                    <label for="age">Age (Optional)</label>
+                    <input type="number" id="age" placeholder="e.g., 32" min="10" max="100">
+                </div>
+
+                <div class="input-group">
+                    <label for="handicap">Handicap Index <span class="required-star">*</span></label>
+                    <input type="number" id="handicap" placeholder="e.g., 12.5" step="0.1" required>
+                    <div class="error-message">Please enter your handicap</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="rounds">Rounds/Year (Optional)</label>
+                    <input type="number" id="rounds" placeholder="e.g., 25" min="0">
+                </div>
+
+                <div class="input-group">
+                    <label for="playerType">Player Type</label>
+                    <select id="playerType">
+                        <option value="amateur">Amateur</option>
+                        <option value="competitive">Competitive Amateur</option>
+                        <option value="teaching">Teaching Pro</option>
+                        <option value="professional">Tour Professional</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>🏌️ Club Selection</h2>
+                <p>Choose the club you want to analyze</p>
+            </div>
+
+            <div class="club-selector">
+                <label for="club">Select Club:</label>
+                <select id="club" onchange="handleClubChange()">
+                    <option value="driver">Driver</option>
+                    <option value="3wood">3 Wood</option>
+                    <option value="5wood">5 Wood</option>
+                    <option value="3iron">3 Iron</option>
+                    <option value="4iron">4 Iron</option>
+                    <option value="5iron">5 Iron</option>
+                    <option value="6iron">6 Iron</option>
+                    <option value="7iron">7 Iron</option>
+                    <option value="8iron">8 Iron</option>
+                    <option value="9iron">9 Iron</option>
+                    <option value="pw">Pitching Wedge</option>
+                    <option value="gw">Gap Wedge</option>
+                    <option value="sw">Sand Wedge</option>
+                    <option value="lw">Lob Wedge</option>
+                </select>
+            </div>
+
+            <!-- Wedge Loft Input (shows only for wedges) -->
+            <div class="wedge-loft-input" id="wedgeLoftContainer" style="display: none;">
+                <div class="input-group">
+                    <label for="wedgeLoft">Wedge Loft (°) <span class="required-star">*</span></label>
+                    <input type="number" id="wedgeLoft" placeholder="e.g., 50" step="1" min="44" max="64">
+                    <small>Enter the loft of your wedge (typically 44-64°)</small>
+                    <div class="error-message">Please enter wedge loft</div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>📊 TrackMan Data</h2>
+                <p>Enter your launch monitor numbers</p>
+            </div>
+
+            <div class="required-note">
+                <p><span class="required-star">*</span> = Required fields. Optional fields can be left blank or marked as "NA".</p>
+            </div>
+
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="smash">Smash Factor <span class="required-star">*</span></label>
+                    <input type="number" id="smash" placeholder="e.g., 1.48" step="0.01" required>
+                    <small>Ball speed ÷ Club speed</small>
+                    <div class="error-message">Required: typically 1.20-1.52</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="launchAngle">Launch Angle (°) <span class="required-star">*</span></label>
+                    <input type="number" id="launchAngle" placeholder="e.g., 12.5" step="0.1" required>
+                    <small>Initial vertical angle</small>
+                    <div class="error-message">Required: typically 8-28°</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="spinRate">Spin Rate (rpm) <span class="required-star">*</span></label>
+                    <input type="number" id="spinRate" placeholder="e.g., 2400" step="50" required>
+                    <small>Backspin rate</small>
+                    <div class="error-message">Required: typically 2000-10000 rpm</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="faceToPath">Face to Path (°)</label>
+                    <input type="text" id="faceToPath" placeholder="e.g., 2.0 or NA">
+                    <small>Face angle relative to path</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="dynamicLoft">Dynamic Loft (°)</label>
+                    <input type="text" id="dynamicLoft" placeholder="e.g., 13.5 or NA">
+                    <small>Loft at impact</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="aoa">Attack Angle (°)</label>
+                    <input type="text" id="aoa" placeholder="e.g., -2.5 or NA">
+                    <small>Negative = down, Positive = up</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="clubSpeed">Club Speed (mph)</label>
+                    <input type="text" id="clubSpeed" placeholder="e.g., 95 or NA">
+                    <small>Speed at impact</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="ballSpeed">Ball Speed (mph)</label>
+                    <input type="text" id="ballSpeed" placeholder="e.g., 142 or NA">
+                    <small>Speed off clubface</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="path">Club Path (°)</label>
+                    <input type="text" id="path" placeholder="e.g., 2.0 or NA">
+                    <small>Negative = left, Positive = right</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="face">Face Angle (°)</label>
+                    <input type="text" id="face" placeholder="e.g., 1.5 or NA">
+                    <small>Negative = closed, Positive = open</small>
+                </div>
+            </div>
+
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyzeSwing()">Analyze My Swing</button>
+
+            <div class="results" id="results"></div>
+
+            <!-- Session Notes -->
+            <div class="session-notes" id="sessionNotes" style="display: none;">
+                <h3>📝 Session Notes</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Track what you're working on and any insights from this session.</p>
+                <textarea id="notesInput" placeholder="e.g., Focused on keeping head behind ball at impact. Felt better extension through the ball..." rows="4"></textarea>
+                <button class="save-notes-btn" onclick="saveSession()">Save Session & Notes</button>
+            </div>
+
+            <!-- View History Button -->
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="history-btn" onclick="toggleHistory()">📊 View Session History</button>
+            </div>
+
+            <!-- History Section -->
+            <div class="history-section" id="historySection" style="display: none;">
+                <div class="history-header">
+                    <h2>📈 Session History</h2>
+                    <div class="history-controls">
+                        <select id="historyClubFilter" onchange="filterHistory()">
+                            <option value="all">All Clubs</option>
+                            <option value="driver">Driver</option>
+                            <option value="3wood">3 Wood</option>
+                            <option value="5wood">5 Wood</option>
+                            <option value="3iron">3 Iron</option>
+                            <option value="4iron">4 Iron</option>
+                            <option value="5iron">5 Iron</option>
+                            <option value="6iron">6 Iron</option>
+                            <option value="7iron">7 Iron</option>
+                            <option value="8iron">8 Iron</option>
+                            <option value="9iron">9 Iron</option>
+                            <option value="pw">Pitching Wedge</option>
+                            <option value="gw">Gap Wedge</option>
+                            <option value="sw">Sand Wedge</option>
+                            <option value="lw">Lob Wedge</option>
+                        </select>
+                        <button class="clear-history-btn" onclick="clearHistory()">Clear All History</button>
+                    </div>
+                </div>
+                <div id="historyContent">
+                    <p style="text-align: center; color: #666; padding: 40px 20px;">No sessions saved yet. Complete your first analysis to start tracking progress!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration and data
+        const clubTargets = {
+            driver: {
+                smash: { min: 1.48, max: 1.52, optimal: 1.50 },
+                aoa: { min: -1, max: 5, optimal: 3 },
+                launchAngle: { min: 10, max: 14, optimal: 12 },
+                spinRate: { min: 2000, max: 2700, optimal: 2400 },
+                speedRatio: { min: 1.48, max: 1.52, optimal: 1.50 }
+            },
+            '7iron': {
+                smash: { min: 1.36, max: 1.42, optimal: 1.39 },
+                aoa: { min: -5, max: -2, optimal: -3.5 },
+                launchAngle: { min: 15, max: 19, optimal: 17 },
+                spinRate: { min: 6500, max: 7500, optimal: 7000 },
+                speedRatio: { min: 1.36, max: 1.42, optimal: 1.39 }
+            },
+            pw: {
+                smash: { min: 1.20, max: 1.28, optimal: 1.24 },
+                aoa: { min: -6, max: -3, optimal: -4.5 },
+                launchAngle: { min: 22, max: 26, optimal: 24 },
+                spinRate: { min: 8500, max: 10000, optimal: 9200 },
+                speedRatio: { min: 1.20, max: 1.28, optimal: 1.24 }
+            },
+            // Wedges will use loft-based targets
+            gw: {
+                smash: { min: 1.18, max: 1.26, optimal: 1.22 },
+                aoa: { min: -6, max: -3, optimal: -4.5 },
+                launchAngle: { min: 24, max: 28, optimal: 26 },
+                spinRate: { min: 9000, max: 10500, optimal: 9750 },
+                speedRatio: { min: 1.18, max: 1.26, optimal: 1.22 }
+            },
+            sw: {
+                smash: { min: 1.16, max: 1.24, optimal: 1.20 },
+                aoa: { min: -6, max: -3, optimal: -4.5 },
+                launchAngle: { min: 26, max: 30, optimal: 28 },
+                spinRate: { min: 9500, max: 11000, optimal: 10250 },
+                speedRatio: { min: 1.16, max: 1.24, optimal: 1.20 }
+            },
+            lw: {
+                smash: { min: 1.14, max: 1.22, optimal: 1.18 },
+                aoa: { min: -6, max: -3, optimal: -4.5 },
+                launchAngle: { min: 28, max: 32, optimal: 30 },
+                spinRate: { min: 10000, max: 11500, optimal: 10750 },
+                speedRatio: { min: 1.14, max: 1.22, optimal: 1.18 }
+            }
+        };
+
+        // Session history storage key
+        const STORAGE_KEY = 'golfAnalyzerHistory';
+        const PROFILE_KEY = 'golfAnalyzerProfile';
+
+        // Current analysis data (for saving to history)
+        let currentAnalysisData = null;
+
+        // Interpolate targets for other clubs
+        clubTargets['3wood'] = interpolateTargets(clubTargets.driver, clubTargets['7iron'], 0.3);
+        clubTargets['5wood'] = interpolateTargets(clubTargets.driver, clubTargets['7iron'], 0.4);
+        clubTargets['3iron'] = interpolateTargets(clubTargets.driver, clubTargets['7iron'], 0.5);
+        clubTargets['4iron'] = interpolateTargets(clubTargets.driver, clubTargets['7iron'], 0.6);
+        clubTargets['5iron'] = interpolateTargets(clubTargets.driver, clubTargets['7iron'], 0.7);
+        clubTargets['6iron'] = interpolateTargets(clubTargets.driver, clubTargets['7iron'], 0.85);
+        clubTargets['8iron'] = interpolateTargets(clubTargets['7iron'], clubTargets.pw, 0.33);
+        clubTargets['9iron'] = interpolateTargets(clubTargets['7iron'], clubTargets.pw, 0.66);
+
+        function interpolateTargets(t1, t2, ratio) {
+            const result = {};
+            for (let key in t1) {
+                result[key] = {};
+                for (let subKey in t1[key]) {
+                    result[key][subKey] = t1[key][subKey] + (t2[key][subKey] - t1[key][subKey]) * ratio;
+                }
+            }
+            return result;
+        }
+
+        // Handle club selection change
+        function handleClubChange() {
+            const club = document.getElementById('club').value;
+            const wedgeLoftContainer = document.getElementById('wedgeLoftContainer');
+            const wedges = ['gw', 'sw', 'lw'];
+            
+            if (wedges.includes(club)) {
+                wedgeLoftContainer.style.display = 'block';
+                document.getElementById('wedgeLoft').required = true;
+            } else {
+                wedgeLoftContainer.style.display = 'none';
+                document.getElementById('wedgeLoft').required = false;
+                document.getElementById('wedgeLoft').value = '';
+            }
+        }
+
+        // Load saved profile on page load
+        function loadProfile() {
+            const savedProfile = localStorage.getItem(PROFILE_KEY);
+            if (savedProfile) {
+                const profile = JSON.parse(savedProfile);
+                if (profile.name) document.getElementById('name').value = profile.name;
+                if (profile.age) document.getElementById('age').value = profile.age;
+                if (profile.handicap !== undefined) document.getElementById('handicap').value = profile.handicap;
+                if (profile.rounds) document.getElementById('rounds').value = profile.rounds;
+                if (profile.playerType) document.getElementById('playerType').value = profile.playerType;
+            }
+        }
+
+        // Save profile to localStorage
+        function saveProfile(profile) {
+            localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+        }
+
+        // Get session history from localStorage
+        function getHistory() {
+            const history = localStorage.getItem(STORAGE_KEY);
+            return history ? JSON.parse(history) : [];
+        }
+
+        // Save session to history
+        function saveSession() {
+            if (!currentAnalysisData) {
+                alert('Please analyze your swing first before saving.');
+                return;
+            }
+
+            const notes = document.getElementById('notesInput').value.trim();
+            
+            const session = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                club: currentAnalysisData.club,
+                wedgeLoft: currentAnalysisData.wedgeLoft,
+                profile: currentAnalysisData.profile,
+                data: currentAnalysisData.data,
+                issues: currentAnalysisData.issues,
+                notes: notes
+            };
+
+            const history = getHistory();
+            history.unshift(session); // Add to beginning
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+            alert('✅ Session saved successfully!');
+            document.getElementById('notesInput').value = '';
+            
+            // Refresh history view if it's open
+            if (document.getElementById('historySection').style.display !== 'none') {
+                displayHistory();
+            }
+        }
+
+        // Toggle history section
+        function toggleHistory() {
+            const historySection = document.getElementById('historySection');
+            if (historySection.style.display === 'none') {
+                historySection.style.display = 'block';
+                displayHistory();
+                smoothScrollTo(historySection);
+            } else {
+                historySection.style.display = 'none';
+            }
+        }
+
+        // Display session history
+        function displayHistory(filter = 'all') {
+            const history = getHistory();
+            const historyContent = document.getElementById('historyContent');
+            
+            if (history.length === 0) {
+                historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions saved yet. Complete your first analysis to start tracking progress!</p>';
+                return;
+            }
+
+            const filteredHistory = filter === 'all' 
+                ? history 
+                : history.filter(session => session.club === filter);
+
+            if (filteredHistory.length === 0) {
+                historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions found for this club.</p>';
+                return;
+            }
+
+            let html = '';
+            filteredHistory.forEach(session => {
+                const date = new Date(session.timestamp);
+                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const clubName = getClubDisplayName(session.club, session.wedgeLoft);
+                
+                html += `
+                    <div class="history-item">
+                        <div class="history-item-header">
+                            <div class="history-item-title">${clubName}</div>
+                            <div class="history-item-date">${dateStr}</div>
+                        </div>
+                        <div class="history-metrics">
+                            <div class="history-metric"><strong>Smash:</strong> ${session.data.smash.toFixed(2)}</div>
+                            <div class="history-metric"><strong>Launch:</strong> ${session.data.launchAngle.toFixed(1)}°</div>
+                            <div class="history-metric"><strong>Spin:</strong> ${Math.round(session.data.spinRate)}</div>
+                            ${session.data.aoa !== null ? `<div class="history-metric"><strong>AoA:</strong> ${session.data.aoa > 0 ? '+' : ''}${session.data.aoa.toFixed(1)}°</div>` : ''}
+                        </div>
+                        ${session.issues.length > 0 ? `
+                            <div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px; font-size: 13px;">
+                                <strong style="color: #856404;">Top Issue:</strong> <span style="color: #856404;">${session.issues[0].title}</span>
+                            </div>
+                        ` : ''}
+                        ${session.notes ? `
+                            <div class="history-notes">
+                                <strong>Notes:</strong>
+                                ${session.notes}
+                            </div>
+                        ` : ''}
+                        <button class="delete-session-btn" onclick="deleteSession(${session.id})">Delete Session</button>
+                    </div>
+                `;
+            });
+
+            historyContent.innerHTML = html;
+        }
+
+        // Filter history by club
+        function filterHistory() {
+            const filter = document.getElementById('historyClubFilter').value;
+            displayHistory(filter);
+        }
+
+        // Delete a specific session
+        function deleteSession(id) {
+            if (!confirm('Are you sure you want to delete this session?')) {
+                return;
+            }
+
+            const history = getHistory();
+            const updatedHistory = history.filter(session => session.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+            
+            displayHistory(document.getElementById('historyClubFilter').value);
+        }
+
+        // Clear all history
+        function clearHistory() {
+            if (!confirm('Are you sure you want to delete ALL session history? This cannot be undone.')) {
+                return;
+            }
+
+            localStorage.removeItem(STORAGE_KEY);
+            displayHistory();
+        }
+
+        // Get display name for club
+        function getClubDisplayName(club, wedgeLoft) {
+            const clubNames = {
+                'driver': 'Driver',
+                '3wood': '3 Wood',
+                '5wood': '5 Wood',
+                '3iron': '3 Iron',
+                '4iron': '4 Iron',
+                '5iron': '5 Iron',
+                '6iron': '6 Iron',
+                '7iron': '7 Iron',
+                '8iron': '8 Iron',
+                '9iron': '9 Iron',
+                'pw': 'Pitching Wedge',
+                'gw': 'Gap Wedge',
+                'sw': 'Sand Wedge',
+                'lw': 'Lob Wedge'
+            };
+            
+            const baseName = clubNames[club] || club;
+            if (wedgeLoft && ['gw', 'sw', 'lw'].includes(club)) {
+                return `${baseName} (${wedgeLoft}°)`;
+            }
+            return baseName;
+        }
+
+        // Utility function to smooth scroll (with fallback for older browsers)
+        function smoothScrollTo(element) {
+            if (element) {
+                // Try modern smooth scroll
+                if ('scrollBehavior' in document.documentElement.style) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    // Fallback for older browsers
+                    element.scrollIntoView(false);
+                }
+            }
+        }
+
+        // Input validation
+        function validateInput(inputId, value, required = false) {
+            const input = document.getElementById(inputId);
+            
+            if (required && (value === null || isNaN(value))) {
+                input.classList.add('error');
+                return false;
+            } else {
+                input.classList.remove('error');
+                return true;
+            }
+        }
+
+        function analyzeSwing() {
+            const button = document.getElementById('analyzeBtn');
+            
+            // Disable button and show loading
+            button.disabled = true;
+            const originalText = button.textContent;
+            button.innerHTML = 'Analyzing... <span class="loading"></span>';
+
+            // Small delay to show loading state
+            setTimeout(() => {
+                performAnalysis();
+                button.disabled = false;
+                button.textContent = originalText;
+            }, 300);
+        }
+
+        function performAnalysis() {
+            const club = document.getElementById('club').value;
+            const wedges = ['gw', 'sw', 'lw'];
+            let wedgeLoft = null;
+            
+            // Check wedge loft if needed
+            if (wedges.includes(club)) {
+                wedgeLoft = parseFloat(document.getElementById('wedgeLoft').value);
+                if (!validateInput('wedgeLoft', wedgeLoft, true)) {
+                    alert('Please enter the loft of your wedge');
+                    document.getElementById('wedgeLoft').focus();
+                    return;
+                }
+            }
+            
+            // Get profile data
+            const profile = {
+                name: document.getElementById('name').value.trim() || null,
+                age: parseInt(document.getElementById('age').value) || null,
+                handicap: parseFloat(document.getElementById('handicap').value),
+                rounds: parseInt(document.getElementById('rounds').value) || null,
+                playerType: document.getElementById('playerType').value
+            };
+
+            // Save profile for next time
+            saveProfile(profile);
+
+            // Validate handicap (most important profile field)
+            if (!validateInput('handicap', profile.handicap, true)) {
+                alert('Please enter your handicap index to get personalized analysis');
+                document.getElementById('handicap').focus();
+                return;
+            }
+
+            // Helper function to parse optional numeric inputs
+            function parseOptional(id) {
+                const value = document.getElementById(id).value.trim();
+                if (value === '' || value.toLowerCase() === 'na' || value.toLowerCase() === 'n/a') {
+                    return null;
+                }
+                return parseFloat(value);
+            }
+
+            // Required fields
+            const smash = parseFloat(document.getElementById('smash').value);
+            const launchAngle = parseFloat(document.getElementById('launchAngle').value);
+            const spinRate = parseFloat(document.getElementById('spinRate').value);
+
+            // Validate required fields
+            let isValid = true;
+            isValid = validateInput('smash', smash, true) && isValid;
+            isValid = validateInput('launchAngle', launchAngle, true) && isValid;
+            isValid = validateInput('spinRate', spinRate, true) && isValid;
+
+            if (!isValid) {
+                alert('Please fill in all required fields: Smash Factor, Launch Angle, and Spin Rate');
+                return;
+            }
+
+            // Optional fields
+            const data = {
+                smash: smash,
+                launchAngle: launchAngle,
+                spinRate: spinRate,
+                faceToPath: parseOptional('faceToPath'),
+                dynamicLoft: parseOptional('dynamicLoft'),
+                aoa: parseOptional('aoa'),
+                clubSpeed: parseOptional('clubSpeed'),
+                ballSpeed: parseOptional('ballSpeed'),
+                path: parseOptional('path'),
+                face: parseOptional('face')
+            };
+
+            // Get adjusted targets based on skill level
+            const targets = getAdjustedTargets(club, profile);
+            const issues = [];
+
+            // Determine skill level for messaging
+            const skillLevel = getSkillLevel(profile);
+
+            // Check smash factor (most important for distance)
+            if (data.smash < targets.smash.min) {
+                const gap = (targets.smash.min - data.smash) * 100;
+                issues.push({
+                    priority: 1,
+                    title: 'Low Smash Factor - Poor Contact',
+                    problem: `Your smash factor is ${data.smash.toFixed(2)}, but ${skillLevel} should be around ${targets.smash.optimal.toFixed(2)} (range: ${targets.smash.min.toFixed(2)}-${targets.smash.max.toFixed(2)}). You're losing distance due to off-center hits.`,
+                    fix: 'Focus on hitting the center of the clubface. Try the "impact tape" drill or foot powder spray to see your strike pattern. Work on consistent contact before worrying about swing mechanics. Even a 0.02 improvement in smash factor can add 4-6 yards.'
+                });
+            }
+
+            // Check face to path (most important for accuracy) - only if available
+            if (data.faceToPath !== null && Math.abs(data.faceToPath) > targets.faceToPath.max) {
+                issues.push({
+                    priority: 1,
+                    title: 'Face to Path Issue - Excessive Curve',
+                    problem: `Your face to path is ${data.faceToPath > 0 ? '+' : ''}${data.faceToPath.toFixed(1)}°. For ${skillLevel}, you want this closer to 0° (within ±${targets.faceToPath.max}°). This creates excessive curve on your shots (${data.faceToPath > 0 ? 'slice/fade' : 'hook/draw'}).`,
+                    fix: `${data.faceToPath > 0 
+                        ? 'Your face is too open relative to path. Try: (1) Stronger grip - rotate both hands more to the right (for righties), (2) Focus on rotating the clubface closed through impact, (3) Check your wrist angles at the top.' 
+                        : 'Your face is too closed relative to path. Try: (1) Weaker grip - rotate hands more to the left (for righties), (2) Feel like you\'re "holding off" the release through impact, (3) Keep the clubface more square to the arc.'}`
+                });
+            }
+
+            // Check launch conditions
+            if (data.launchAngle < targets.launchAngle.min || data.launchAngle > targets.launchAngle.max) {
+                const tooLow = data.launchAngle < targets.launchAngle.min;
+                
+                // Build more detailed diagnosis if we have dynamic loft and/or attack angle
+                let diagnosis = '';
+                if (data.dynamicLoft !== null && data.aoa !== null) {
+                    const expectedLaunch = data.dynamicLoft + (data.aoa * 0.5);
+                    if (Math.abs(expectedLaunch - data.launchAngle) > 3) {
+                        diagnosis = ' Your dynamic loft and attack angle suggest something else is affecting launch (possibly strike location on the face).';
+                    }
+                } else if (data.dynamicLoft !== null) {
+                    if (tooLow && data.dynamicLoft < targets.launchAngle.optimal - 5) {
+                        diagnosis = ' Your dynamic loft is also low, indicating you may be delofting at impact with excessive forward shaft lean.';
+                    } else if (!tooLow && data.dynamicLoft > targets.launchAngle.optimal + 3) {
+                        diagnosis = ' Your dynamic loft is high, indicating you may be adding loft (flipping/scooping) at impact.';
+                    }
+                } else if (data.aoa !== null) {
+                    if (club === 'driver' && tooLow && data.aoa < 0) {
+                        diagnosis = ' Your negative attack angle is contributing to the low launch.';
+                    }
+                }
+
+                issues.push({
+                    priority: 2,
+                    title: `${tooLow ? 'Low' : 'High'} Launch Angle`,
+                    problem: `Your launch angle is ${data.launchAngle.toFixed(1)}°. For ${skillLevel}, optimal is ${targets.launchAngle.min}-${targets.launchAngle.max}° with ${club}.${diagnosis}`,
+                    fix: tooLow 
+                        ? `${club === 'driver' ? 'Driver fixes: (1) Tee it higher - ball should be half above the crown, (2) Move ball forward - off your lead heel, (3) Widen your stance and tilt your spine away from target at address, (4) Feel like you\'re hitting "up" on the ball.' : 'Iron fixes: (1) Check ball position - should be center to slightly forward, (2) Reduce forward shaft lean at impact, (3) Ensure you\'re not trapping it too much, (4) Swing more around your body rather than down.'}`
+                        : `${club === 'driver' ? 'Driver fixes: (1) Lower tee height slightly, (2) Move ball back 1-2 inches, (3) Reduce upper body tilt away from target, (4) Feel more "through" the ball rather than "up" at it. You may also be flipping at impact.' : 'Iron fixes: (1) Ball position may be too far forward, (2) Add slight forward shaft lean, (3) Make sure you\'re compressing the ball, not scooping it, (4) Lead with your hands through impact.'}`
+                });
+            }
+
+            // Check spin rate
+            if (data.spinRate < targets.spinRate.min || data.spinRate > targets.spinRate.max) {
+                const tooLow = data.spinRate < targets.spinRate.min;
+                issues.push({
+                    priority: 2,
+                    title: `${tooLow ? 'Low' : 'High'} Spin Rate`,
+                    problem: `Your spin is ${data.spinRate} rpm. For ${skillLevel} with ${club}, optimal is ${targets.spinRate.min}-${targets.spinRate.max} rpm. ${tooLow ? 'Too little spin can cause the ball to drop out of the sky and reduce control, especially into greens.' : 'Too much spin costs you significant distance - you\'re creating too much backspin which fights forward momentum.'}`,
+                    fix: tooLow
+                        ? `${club === 'driver' ? 'Driver fixes: (1) Check if you\'re delofting excessively - may need more loft on your driver, (2) Hit slightly more up on it (positive attack angle), (3) Your shaft may be too stiff, (4) Clean your clubface and check for worn grooves.' : 'Iron fixes: (1) Ensure clean, crisp contact - not thin strikes, (2) Check your grooves aren\'t worn, (3) You may be catching it thin or low on the face, (4) Maintain dynamic loft through impact.'}`
+                        : `${club === 'driver' ? 'Driver fixes: (1) Tee it higher and swing more up on it, (2) You\'re likely hitting down (negative attack angle) - fix this first, (3) May be hitting high on the face, (4) Could need less loft on your driver head.' : 'Iron fixes: (1) Reduce angle of attack - you\'re coming in too steep, (2) Less forward shaft lean at impact, (3) Shallow out your downswing, (4) Feel like you\'re "releasing" the club earlier through impact.'}`
+                });
+            }
+
+            // Check attack angle (only if available)
+            if (data.aoa !== null && club === 'driver') {
+                if (data.aoa < targets.aoa.min) {
+                    issues.push({
+                        priority: 2,
+                        title: 'Negative Attack Angle with Driver',
+                        problem: `You're hitting down on your driver (${data.aoa.toFixed(1)}°). For ${skillLevel}, you should be between ${targets.aoa.min.toFixed(1)}° and ${targets.aoa.optimal.toFixed(1)}°. This costs you distance and creates excessive spin.`,
+                        fix: 'Driver attack angle fixes: (1) Tee it HIGH - half the ball above the crown, (2) Ball position forward - off lead heel or toe, (3) Widen stance and tilt spine away from target, (4) Feel like your head stays behind the ball through impact, (5) Practice the "up at it" drill - literally feel like you\'re swinging up at the ball.'
+                    });
+                }
+            }
+
+            // Sort issues by priority
+            issues.sort((a, b) => a.priority - b.priority);
+
+            // Store current analysis for saving to history
+            currentAnalysisData = {
+                club: club,
+                wedgeLoft: wedgeLoft,
+                profile: profile,
+                data: data,
+                issues: issues.slice(0, 2)
+            };
+
+            // Display results
+            displayResults(issues.slice(0, 2), targets, club, data, profile);
+            
+            // Show notes section after analysis
+            document.getElementById('sessionNotes').style.display = 'block';
+        }
+
+        function getSkillLevel(profile) {
+            if (profile.playerType === 'professional') return 'Tour Professionals';
+            if (profile.playerType === 'teaching') return 'Teaching Professionals';
+            if (profile.playerType === 'competitive') return 'Competitive Amateurs';
+            
+            if (profile.handicap <= 0) return 'Scratch Golfers';
+            if (profile.handicap <= 5) return 'Single-Digit Handicappers';
+            if (profile.handicap <= 10) return '5-10 Handicappers';
+            if (profile.handicap <= 15) return '10-15 Handicappers';
+            if (profile.handicap <= 20) return '15-20 Handicappers';
+            return '20+ Handicappers';
+        }
+
+        function getAdjustedTargets(club, profile) {
+            const baseTargets = clubTargets[club];
+            const adjusted = JSON.parse(JSON.stringify(baseTargets)); // Deep clone
+
+            // Calculate skill factor (0 = beginner, 1 = pro)
+            let skillFactor = 1.0;
+            if (profile.playerType === 'professional') {
+                skillFactor = 1.0;
+            } else if (profile.playerType === 'teaching') {
+                skillFactor = 0.95;
+            } else if (profile.playerType === 'competitive') {
+                skillFactor = Math.max(0.7, 1.0 - (profile.handicap / 20));
+            } else {
+                skillFactor = Math.max(0.5, 1.0 - (profile.handicap / 25));
+            }
+
+            // Adjust smash factor expectations
+            const smashRange = baseTargets.smash.max - baseTargets.smash.min;
+            adjusted.smash = {
+                min: baseTargets.smash.min - (1.0 - skillFactor) * smashRange * 0.8,
+                max: baseTargets.smash.max,
+                optimal: baseTargets.smash.optimal - (1.0 - skillFactor) * smashRange * 0.5
+            };
+
+            // Adjust launch angle
+            if (club === 'driver') {
+                if (profile.playerType === 'professional' || profile.playerType === 'teaching') {
+                    adjusted.launchAngle = { min: 9, max: 13, optimal: 11 };
+                } else if (profile.handicap <= 0) {
+                    adjusted.launchAngle = { min: 9.5, max: 13, optimal: 11.2 };
+                } else if (profile.handicap <= 4) {
+                    adjusted.launchAngle = { min: 10, max: 13, optimal: 11.2 };
+                } else if (profile.handicap <= 8) {
+                    adjusted.launchAngle = { min: 10, max: 13.5, optimal: 11.5 };
+                } else if (profile.handicap <= 12) {
+                    adjusted.launchAngle = { min: 10.5, max: 14, optimal: 11.9 };
+                } else if (profile.handicap <= 16) {
+                    adjusted.launchAngle = { min: 11, max: 14.5, optimal: 12.3 };
+                } else if (profile.handicap <= 20) {
+                    adjusted.launchAngle = { min: 11.5, max: 15, optimal: 12.6 };
+                } else {
+                    adjusted.launchAngle = { min: 11, max: 15, optimal: 12.5 };
+                }
+            }
+
+            // Adjust spin rate
+            if (club === 'driver') {
+                if (profile.playerType === 'professional' || profile.playerType === 'teaching') {
+                    adjusted.spinRate = { min: 2000, max: 2800, optimal: 2400 };
+                } else if (profile.handicap <= 0) {
+                    adjusted.spinRate = { min: 2100, max: 3000, optimal: 2500 };
+                } else if (profile.handicap <= 4) {
+                    adjusted.spinRate = { min: 2200, max: 3100, optimal: 2650 };
+                } else if (profile.handicap <= 8) {
+                    adjusted.spinRate = { min: 2300, max: 3300, optimal: 2800 };
+                } else if (profile.handicap <= 12) {
+                    adjusted.spinRate = { min: 2400, max: 3500, optimal: 2900 };
+                } else if (profile.handicap <= 16) {
+                    adjusted.spinRate = { min: 2500, max: 3600, optimal: 3000 };
+                } else if (profile.handicap <= 20) {
+                    adjusted.spinRate = { min: 2500, max: 3700, optimal: 3100 };
+                } else {
+                    adjusted.spinRate = { min: 2600, max: 3800, optimal: 3200 };
+                }
+            }
+
+            // Adjust face to path tolerance
+            adjusted.faceToPath = {
+                max: 3 + (1.0 - skillFactor) * 12
+            };
+
+            // Adjust attack angle by handicap
+            if (club === 'driver') {
+                if (profile.playerType === 'professional' || profile.playerType === 'teaching') {
+                    adjusted.aoa = { min: -2, max: 5, optimal: 1 };
+                } else if (profile.handicap <= 0) {
+                    adjusted.aoa = { min: -1.5, max: 5, optimal: 1.5 };
+                } else if (profile.handicap <= 4) {
+                    adjusted.aoa = { min: -1, max: 5, optimal: 2 };
+                } else if (profile.handicap <= 8) {
+                    adjusted.aoa = { min: 0, max: 5, optimal: 2.5 };
+                } else if (profile.handicap <= 12) {
+                    adjusted.aoa = { min: 0, max: 5, optimal: 3 };
+                } else if (profile.handicap <= 16) {
+                    adjusted.aoa = { min: 0, max: 5, optimal: 3 };
+                } else if (profile.handicap <= 20) {
+                    adjusted.aoa = { min: 0, max: 5, optimal: 3.5 };
+                } else {
+                    adjusted.aoa = { min: 0, max: 5, optimal: 4 };
+                }
+            }
+
+            return adjusted;
+        }
+
+        function getTypicalAverages(club, profile) {
+            const averages = {};
+            
+            if (club === 'driver') {
+                if (profile.playerType === 'professional' || profile.playerType === 'teaching') {
+                    averages.launchAngle = 11.0;
+                    averages.spinRate = 2400;
+                    averages.aoa = -0.9;
+                } else if (profile.handicap <= 0) {
+                    averages.launchAngle = 11.2;
+                    averages.spinRate = 2896;
+                    averages.aoa = -0.9;
+                } else if (profile.handicap <= 4) {
+                    averages.launchAngle = 11.2;
+                    averages.spinRate = 2900;
+                    averages.aoa = -1.0;
+                } else if (profile.handicap <= 8) {
+                    averages.launchAngle = 11.5;
+                    averages.spinRate = 2987;
+                    averages.aoa = -1.1;
+                } else if (profile.handicap <= 12) {
+                    averages.launchAngle = 11.9;
+                    averages.spinRate = 3192;
+                    averages.aoa = -1.2;
+                } else if (profile.handicap <= 16) {
+                    averages.launchAngle = 12.3;
+                    averages.spinRate = 3250;
+                    averages.aoa = -1.5;
+                } else if (profile.handicap <= 20) {
+                    averages.launchAngle = 12.6;
+                    averages.spinRate = 3275;
+                    averages.aoa = -1.8;
+                } else if (profile.handicap <= 24) {
+                    averages.launchAngle = 12.5;
+                    averages.spinRate = 3200;
+                    averages.aoa = -2.0;
+                } else {
+                    averages.launchAngle = 12.1;
+                    averages.spinRate = 3127;
+                    averages.aoa = -2.1;
+                }
+            }
+            
+            return averages;
+        }
+
+        function displayResults(issues, targets, club, data, profile) {
+            const resultsDiv = document.getElementById('results');
+            const skillLevel = getSkillLevel(profile);
+            
+            if (issues.length === 0) {
+                resultsDiv.innerHTML = `
+                    <h2>✅ Excellent Numbers!</h2>
+                    <div class="warning">
+                        <p>Your TrackMan data looks very solid for ${skillLevel}. Keep up the great work! Focus on consistency, course management, and maintaining these numbers under pressure.</p>
+                    </div>
+                    ${getTargetDataHTML(targets, club, skillLevel, profile)}
+                `;
+            } else {
+                let html = '<h2>🎯 Your Focus Areas</h2>';
+                html += `<p style="color: #666; margin-bottom: 20px;">Based on your profile as ${skillLevel}, here's what to work on:</p>`;
+                
+                issues.forEach((issue, index) => {
+                    html += `
+                        <div class="priority-box">
+                            <h3>${index === 0 ? '🔴 Priority #1: ' : '🟡 Priority #2: '}${issue.title}</h3>
+                            <p><strong>The Issue:</strong> ${issue.problem}</p>
+                            <p><strong>The Fix:</strong> ${issue.fix}</p>
+                        </div>
+                    `;
+                });
+
+                html += getTargetDataHTML(targets, club, skillLevel, profile);
+                resultsDiv.innerHTML = html;
+            }
+
+            resultsDiv.classList.add('show');
+            smoothScrollTo(resultsDiv);
+        }
+
+        function getTargetDataHTML(targets, club, skillLevel, profile) {
+            const clubName = document.getElementById('club').options[document.getElementById('club').selectedIndex].text;
+            const typicalAverages = getTypicalAverages(club, profile);
+            
+            let html = `
+                <div class="target-data">
+                    <h3>📊 Your Numbers vs Benchmarks (${skillLevel})</h3>
+            `;
+            
+            // Show typical averages if available
+            if (typicalAverages && Object.keys(typicalAverages).length > 0) {
+                html += `
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                        <h4 style="color: #856404; margin-bottom: 10px; font-size: 14px;">📈 Typical Averages for ${skillLevel}</h4>
+                        <p style="color: #856404; font-size: 13px; margin-bottom: 8px;">This is what golfers at your level typically achieve:</p>
+                        <div class="target-grid">
+                `;
+                
+                if (typicalAverages.launchAngle) {
+                    html += `
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Launch Angle</div>
+                            <div class="value" style="color: #856404;">${typicalAverages.launchAngle.toFixed(1)}°</div>
+                        </div>
+                    `;
+                }
+                
+                if (typicalAverages.spinRate) {
+                    html += `
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Spin Rate</div>
+                            <div class="value" style="color: #856404;">${Math.round(typicalAverages.spinRate)}</div>
+                        </div>
+                    `;
+                }
+                
+                if (typicalAverages.aoa !== undefined) {
+                    html += `
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Attack Angle</div>
+                            <div class="value" style="color: #856404;">${typicalAverages.aoa > 0 ? '+' : ''}${typicalAverages.aoa.toFixed(1)}°</div>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Show optimal targets
+            html += `
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #2e7d32;">
+                    <h4 style="color: #2e7d32; margin-bottom: 10px; font-size: 14px;">🎯 Optimal Targets for ${skillLevel}</h4>
+                    <p style="color: #2e7d32; font-size: 13px; margin-bottom: 8px;">Aim for these numbers to maximize performance:</p>
+                    <div class="target-grid">
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Smash Factor</div>
+                            <div class="value">${targets.smash.optimal.toFixed(2)}</div>
+                        </div>
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Launch Angle</div>
+                            <div class="value">${targets.launchAngle.optimal.toFixed(1)}°</div>
+                        </div>
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Spin Rate</div>
+                            <div class="value">${Math.round(targets.spinRate.optimal)}</div>
+                        </div>
+                        <div class="target-item" style="background: #fff;">
+                            <div class="label">Attack Angle</div>
+                            <div class="value">${targets.aoa.optimal > 0 ? '+' : ''}${targets.aoa.optimal.toFixed(1)}°</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            return html;
+        }
+
+        // Add enter key support for better UX and load saved profile
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved profile
+            loadProfile();
+            
+            // Enter key support
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        analyzeSwing();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
