@@ -638,12 +638,21 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            width: 100%;
         }
 
         @media (min-width: 480px) {
             .history-controls {
                 flex-direction: row;
                 gap: 12px;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .history-controls {
+                width: auto;
+                flex-wrap: nowrap;
             }
         }
 
@@ -977,7 +986,10 @@
             <!-- History Section -->
             <div class="history-section" id="historySection" style="display: none;">
                 <div class="history-header">
-                    <h2>📈 Session History</h2>
+                    <div>
+                        <h2>📈 Session History</h2>
+                        <p id="sessionCount" style="font-size: 14px; color: #666; margin-top: 5px;">0 sessions saved</p>
+                    </div>
                     <div class="history-controls">
                         <select id="historyClubFilter" onchange="filterHistory()">
                             <option value="all">All Clubs</option>
@@ -996,7 +1008,8 @@
                             <option value="sw">Sand Wedge</option>
                             <option value="lw">Lob Wedge</option>
                         </select>
-                        <button class="clear-history-btn" onclick="clearHistory()">Clear All History</button>
+                        <button class="history-btn" onclick="exportToCSV()" style="padding: 10px 16px; font-size: 14px;">📥 Export CSV</button>
+                        <button class="clear-history-btn" onclick="clearHistory()">Clear All</button>
                     </div>
                 </div>
                 <div id="historyContent">
@@ -1129,8 +1142,14 @@
                 return;
             }
 
+            // Check localStorage support
+            if (!isLocalStorageAvailable()) {
+                alert('❌ localStorage is not available in your browser. Session cannot be saved.');
+                return;
+            }
+
             const notes = document.getElementById('notesInput').value.trim();
-            
+
             const session = {
                 id: Date.now(),
                 timestamp: new Date().toISOString(),
@@ -1142,16 +1161,40 @@
                 notes: notes
             };
 
-            const history = getHistory();
-            history.unshift(session); // Add to beginning
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            try {
+                const history = getHistory();
+                history.unshift(session); // Add to beginning
 
-            alert('✅ Session saved successfully!');
-            document.getElementById('notesInput').value = '';
-            
-            // Refresh history view if it's open
-            if (document.getElementById('historySection').style.display !== 'none') {
-                displayHistory();
+                // Limit to 50 sessions
+                const limitedHistory = history.slice(0, 50);
+
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(limitedHistory));
+
+                alert('✅ Session saved successfully!');
+                document.getElementById('notesInput').value = '';
+
+                // Refresh history view if it's open
+                if (document.getElementById('historySection').style.display !== 'none') {
+                    displayHistory();
+                }
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    alert('❌ Storage quota exceeded. Try clearing old sessions first.');
+                } else {
+                    alert('❌ Error saving session: ' + e.message);
+                }
+            }
+        }
+
+        // Check if localStorage is available
+        function isLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                return false;
             }
         }
 
@@ -1171,14 +1214,14 @@
         function displayHistory(filter = 'all') {
             const history = getHistory();
             const historyContent = document.getElementById('historyContent');
-            
+
             if (history.length === 0) {
                 historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions saved yet. Complete your first analysis to start tracking progress!</p>';
                 return;
             }
 
-            const filteredHistory = filter === 'all' 
-                ? history 
+            const filteredHistory = filter === 'all'
+                ? history
                 : history.filter(session => session.club === filter);
 
             if (filteredHistory.length === 0) {
@@ -1186,12 +1229,19 @@
                 return;
             }
 
+            // Update session count in header
+            updateSessionCount(history.length);
+
             let html = '';
-            filteredHistory.forEach(session => {
+            filteredHistory.forEach((session, index) => {
                 const date = new Date(session.timestamp);
                 const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const clubName = getClubDisplayName(session.club, session.wedgeLoft);
-                
+
+                // Find previous session with same club for comparison
+                const previousSession = findPreviousSessionForClub(filteredHistory, index, session.club);
+                const comparison = previousSession ? compareSessions(session, previousSession) : null;
+
                 html += `
                     <div class="history-item">
                         <div class="history-item-header">
@@ -1204,6 +1254,7 @@
                             <div class="history-metric"><strong>Spin:</strong> ${Math.round(session.data.spinRate)}</div>
                             ${session.data.aoa !== null ? `<div class="history-metric"><strong>AoA:</strong> ${session.data.aoa > 0 ? '+' : ''}${session.data.aoa.toFixed(1)}°</div>` : ''}
                         </div>
+                        ${comparison ? getComparisonHTML(comparison) : '<div style="margin-top: 8px; padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 13px; color: #1976d2;"><strong>First session for this club - no comparison available</strong></div>'}
                         ${session.issues.length > 0 ? `
                             <div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px; font-size: 13px;">
                                 <strong style="color: #856404;">Top Issue:</strong> <span style="color: #856404;">${session.issues[0].title}</span>
@@ -1221,6 +1272,107 @@
             });
 
             historyContent.innerHTML = html;
+        }
+
+        // Find previous session for the same club
+        function findPreviousSessionForClub(sessions, currentIndex, club) {
+            for (let i = currentIndex + 1; i < sessions.length; i++) {
+                if (sessions[i].club === club) {
+                    return sessions[i];
+                }
+            }
+            return null;
+        }
+
+        // Compare two sessions and return improvements/regressions
+        function compareSessions(current, previous) {
+            const changes = [];
+
+            // Compare smash factor
+            const smashDiff = current.data.smash - previous.data.smash;
+            if (Math.abs(smashDiff) >= 0.01) {
+                changes.push({
+                    metric: 'Smash factor',
+                    change: smashDiff > 0 ? 'improved' : 'decreased',
+                    value: `${smashDiff > 0 ? '+' : ''}${smashDiff.toFixed(2)}`,
+                    isImprovement: smashDiff > 0
+                });
+            }
+
+            // Compare launch angle (closer to optimal is better, but we'll just show change)
+            const launchDiff = current.data.launchAngle - previous.data.launchAngle;
+            if (Math.abs(launchDiff) >= 0.5) {
+                changes.push({
+                    metric: 'Launch angle',
+                    change: launchDiff > 0 ? 'increased' : 'decreased',
+                    value: `${launchDiff > 0 ? '+' : ''}${launchDiff.toFixed(1)}°`,
+                    isImprovement: null // Neutral - depends on context
+                });
+            }
+
+            // Compare spin rate (for driver, lower is often better; for irons, higher is better)
+            const spinDiff = current.data.spinRate - previous.data.spinRate;
+            if (Math.abs(spinDiff) >= 100) {
+                const isDriver = current.club === 'driver';
+                const isImprovement = isDriver ? spinDiff < 0 : spinDiff > 0;
+                changes.push({
+                    metric: 'Spin rate',
+                    change: spinDiff > 0 ? 'increased' : 'decreased',
+                    value: `${spinDiff > 0 ? '+' : ''}${Math.round(spinDiff)} rpm`,
+                    isImprovement: isImprovement
+                });
+            }
+
+            // Compare attack angle if both have it
+            if (current.data.aoa !== null && previous.data.aoa !== null) {
+                const aoaDiff = current.data.aoa - previous.data.aoa;
+                if (Math.abs(aoaDiff) >= 0.5) {
+                    const isDriver = current.club === 'driver';
+                    const isImprovement = isDriver ? aoaDiff > 0 : aoaDiff < 0; // Driver wants positive, irons want negative
+                    changes.push({
+                        metric: 'Attack angle',
+                        change: aoaDiff > 0 ? 'increased' : 'decreased',
+                        value: `${aoaDiff > 0 ? '+' : ''}${aoaDiff.toFixed(1)}°`,
+                        isImprovement: isImprovement
+                    });
+                }
+            }
+
+            return changes;
+        }
+
+        // Generate HTML for comparison
+        function getComparisonHTML(changes) {
+            if (changes.length === 0) {
+                return '<div style="margin-top: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; font-size: 13px; color: #666;"><strong>No significant changes vs previous session</strong></div>';
+            }
+
+            let html = '<div style="margin-top: 8px; padding: 10px; background: #f5f5f5; border-radius: 4px; font-size: 13px;"><strong style="color: #333;">📊 vs Previous Session:</strong><div style="margin-top: 6px;">';
+
+            changes.forEach(change => {
+                let color = '#666';
+                let icon = '●';
+                if (change.isImprovement === true) {
+                    color = '#2e7d32'; // Green
+                    icon = '▲';
+                } else if (change.isImprovement === false) {
+                    color = '#f57c00'; // Orange
+                    icon = '▼';
+                }
+
+                html += `<div style="color: ${color}; margin-bottom: 4px;">${icon} ${change.metric} ${change.change} by ${change.value}</div>`;
+            });
+
+            html += '</div></div>';
+            return html;
+        }
+
+        // Update session count display
+        function updateSessionCount(count) {
+            const countDisplay = document.getElementById('sessionCount');
+            if (countDisplay) {
+                countDisplay.textContent = `${count} session${count !== 1 ? 's' : ''} saved`;
+            }
         }
 
         // Filter history by club
@@ -1250,6 +1402,66 @@
 
             localStorage.removeItem(STORAGE_KEY);
             displayHistory();
+        }
+
+        // Export history to CSV
+        function exportToCSV() {
+            const history = getHistory();
+
+            if (history.length === 0) {
+                alert('No sessions to export!');
+                return;
+            }
+
+            // CSV headers
+            let csv = 'Date,Time,Club,Handicap,Player Type,Smash Factor,Launch Angle,Spin Rate,Attack Angle,Dynamic Loft,Club Speed,Ball Speed,Face to Path,Club Path,Face Angle,Top Issue,Notes\n';
+
+            // Add each session
+            history.forEach(session => {
+                const date = new Date(session.timestamp);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const clubName = getClubDisplayName(session.club, session.wedgeLoft);
+                const topIssue = session.issues.length > 0 ? session.issues[0].title : 'None';
+                const notes = session.notes ? session.notes.replace(/"/g, '""').replace(/\n/g, ' ') : '';
+
+                const row = [
+                    dateStr,
+                    timeStr,
+                    clubName,
+                    session.profile.handicap || '',
+                    session.profile.playerType || '',
+                    session.data.smash !== null ? session.data.smash.toFixed(2) : '',
+                    session.data.launchAngle !== null ? session.data.launchAngle.toFixed(1) : '',
+                    session.data.spinRate !== null ? Math.round(session.data.spinRate) : '',
+                    session.data.aoa !== null ? session.data.aoa.toFixed(1) : '',
+                    session.data.dynamicLoft !== null ? session.data.dynamicLoft.toFixed(1) : '',
+                    session.data.clubSpeed !== null ? session.data.clubSpeed.toFixed(1) : '',
+                    session.data.ballSpeed !== null ? session.data.ballSpeed.toFixed(1) : '',
+                    session.data.faceToPath !== null ? session.data.faceToPath.toFixed(1) : '',
+                    session.data.path !== null ? session.data.path.toFixed(1) : '',
+                    session.data.face !== null ? session.data.face.toFixed(1) : '',
+                    `"${topIssue}"`,
+                    `"${notes}"`
+                ];
+
+                csv += row.join(',') + '\n';
+            });
+
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', `golf-sessions-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert('✅ Sessions exported to CSV successfully!');
         }
 
         // Get display name for club
@@ -1771,9 +1983,18 @@
 
         // Add enter key support for better UX and load saved profile
         document.addEventListener('DOMContentLoaded', function() {
+            // Check localStorage availability
+            if (!isLocalStorageAvailable()) {
+                const warning = document.createElement('div');
+                warning.className = 'warning';
+                warning.style.marginBottom = '20px';
+                warning.innerHTML = '<p><strong>⚠️ Warning:</strong> localStorage is not available in your browser. Session history and profile saving will not work. Please enable cookies/storage or use a different browser.</p>';
+                document.querySelector('.content').insertBefore(warning, document.querySelector('.section-header'));
+            }
+
             // Load saved profile
             loadProfile();
-            
+
             // Enter key support
             const inputs = document.querySelectorAll('input');
             inputs.forEach(input => {
