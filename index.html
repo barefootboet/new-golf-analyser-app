@@ -7,15 +7,114 @@
     <meta name="theme-color" content="#1e3c72">
     <title>TrackMan Golf Swing Analyzer</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG4QryGfnqxencNJJtt1rmj1fV4tSqGJs",
+            authDomain: "swing-analysis-3afa2.firebaseapp.com",
+            projectId: "swing-analysis-3afa2",
+            storageBucket: "swing-analysis-3afa2.firebasestorage.app",
+            messagingSenderId: "1067695630377",
+            appId: "1:1067695630377:web:f9df849876d1f147871438",
+            measurementId: "G-H8KY25JRJH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseAuthFunctions = {
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        };
+        window.firestoreFunctions = {
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            orderBy,
+            where,
+            deleteDoc,
+            doc,
+            setDoc,
+            getDoc
+        };
+    </script>
 </head>
 <body>
+    <!-- Authentication Modal -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-modal">
+            <div class="auth-header" style="position: relative;">
+                <button class="auth-close" onclick="closeAuthModal()">×</button>
+                <h2>🔐 Account Access</h2>
+                <p>Sign in to save your data to the cloud</p>
+            </div>
+            <div class="auth-content">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+                    <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+                </div>
+                <div class="auth-error" id="authError"></div>
+                <form class="auth-form active" id="signinForm" onsubmit="handleSignIn(event)">
+                    <div class="auth-input-group">
+                        <label for="signinEmail">Email</label>
+                        <input type="email" id="signinEmail" placeholder="your@email.com" required>
+                    </div>
+                    <div class="auth-input-group">
+                        <label for="signinPassword">Password</label>
+                        <input type="password" id="signinPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="auth-submit-btn" id="signinBtn">Sign In</button>
+                </form>
+                <form class="auth-form" id="signupForm" onsubmit="handleSignUp(event)">
+                    <div class="auth-input-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="your@email.com" required>
+                    </div>
+                    <div class="auth-input-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" minlength="6" required>
+                        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">At least 6 characters</small>
+                    </div>
+                    <div class="auth-input-group">
+                        <label for="signupPasswordConfirm">Confirm Password</label>
+                        <input type="password" id="signupPasswordConfirm" placeholder="••••••••" minlength="6" required>
+                    </div>
+                    <button type="submit" class="auth-submit-btn" id="signupBtn">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
+        <!-- User Info Bar (shown when signed in) -->
+        <div class="user-info-bar" id="userInfoBar">
+            <div>
+                <span>👤 Signed in as: </span>
+                <span class="user-email" id="userEmail"></span>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+        </div>
         <div class="header">
             <h1>⛳ TrackMan Swing Analyzer</h1>
             <p>Get focused improvement tips based on your launch monitor data</p>
         </div>
 
         <div class="content">
+            <!-- Sign In Prompt (shown when not logged in) -->
+            <div class="sign-in-prompt" id="signInPrompt">
+                <p>🔒 <strong>Sign in to save your data to the cloud</strong> and access it from any device!</p>
+                <button type="button" onclick="openAuthModal()">Sign In / Create Account</button>
+            </div>
             <div class="section-header">
                 <h2>👤 Your Profile</h2>
                 <p>Help us personalize your swing analysis</p>
@@ -213,6 +312,7 @@
     </div>
 
     <script src="config.js"></script>
+    <script src="auth.js"></script>
     <script src="history.js"></script>
     <script src="analysis.js"></script>
     <script src="app.js"></script>

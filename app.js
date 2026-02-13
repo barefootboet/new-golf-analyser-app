@@ -5,6 +5,7 @@
 var currentAnalysisData = null;
 
 function loadProfile() {
+    if (window.currentUser) return;
     try {
         var savedProfile = localStorage.getItem(PROFILE_KEY);
         if (savedProfile) {
@@ -21,7 +22,11 @@ function loadProfile() {
 }
 
 function saveProfile(profile) {
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    if (window.currentUser && window.CLOUD_STORAGE_ENABLED) {
+        window.saveProfileToCloud(profile);
+    } else {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    }
 }
 
 function validateInput(inputId, value, required) {
@@ -131,6 +136,7 @@ function performAnalysis() {
 
 document.addEventListener('DOMContentLoaded', function () {
     loadProfile();
+    if (typeof initAuth === 'function') initAuth();
     var inputs = document.querySelectorAll('input');
     inputs.forEach(function (input) {
         input.addEventListener('keypress', function (e) {

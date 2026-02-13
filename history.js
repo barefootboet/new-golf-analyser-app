@@ -10,11 +10,14 @@ function escapeHtml(str) {
 }
 
 function getHistory() {
+    if (window.currentUser && window.CLOUD_STORAGE_ENABLED) {
+        return window.loadSessionsFromCloud();
+    }
     try {
         var raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        return Promise.resolve(raw ? JSON.parse(raw) : []);
     } catch (e) {
-        return [];
+        return Promise.resolve([]);
     }
 }
 
@@ -34,13 +37,31 @@ function saveSession() {
         issues: window.currentAnalysisData.issues,
         notes: notes
     };
-    var history = getHistory();
-    history.unshift(session);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-    alert('✅ Session saved successfully!');
-    document.getElementById('notesInput').value = '';
-    if (document.getElementById('historySection').style.display !== 'none') {
-        displayHistory();
+    if (window.currentUser && window.CLOUD_STORAGE_ENABLED) {
+        window.saveSessionToCloud(session).then(function (success) {
+            if (success) {
+                alert('✅ Session saved to cloud successfully!');
+                document.getElementById('notesInput').value = '';
+                if (document.getElementById('historySection').style.display !== 'none') {
+                    displayHistory();
+                }
+            }
+        });
+        return;
+    }
+    try {
+        getHistory().then(function (history) {
+            history.unshift(session);
+            var limited = history.slice(0, 50);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
+            alert('✅ Session saved locally! Sign in to save to the cloud.');
+            document.getElementById('notesInput').value = '';
+            if (document.getElementById('historySection').style.display !== 'none') {
+                displayHistory();
+            }
+        });
+    } catch (e) {
+        alert('❌ Error saving session: ' + (e.message || e));
     }
 }
 
@@ -81,42 +102,44 @@ function getClubDisplayName(club, wedgeLoft) {
 
 function displayHistory(filter) {
     if (filter === undefined) filter = 'all';
-    var history = getHistory();
     var historyContent = document.getElementById('historyContent');
-    if (history.length === 0) {
-        historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions saved yet. Complete your first analysis to start tracking progress!</p>';
-        return;
-    }
-    var filteredHistory = filter === 'all' ? history : history.filter(function (s) { return s.club === filter; });
-    if (filteredHistory.length === 0) {
-        historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions found for this club.</p>';
-        return;
-    }
-    var html = '';
-    filteredHistory.forEach(function (session) {
-        var date = new Date(session.timestamp);
-        var dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        var clubName = getClubDisplayName(session.club, session.wedgeLoft);
-        html += '<div class="history-item">';
-        html += '<div class="history-item-header"><div class="history-item-title">' + escapeHtml(clubName) + '</div><div class="history-item-date">' + escapeHtml(dateStr) + '</div></div>';
-        html += '<div class="history-metrics">';
-        html += '<div class="history-metric"><strong>Smash:</strong> ' + session.data.smash.toFixed(2) + '</div>';
-        html += '<div class="history-metric"><strong>Launch:</strong> ' + session.data.launchAngle.toFixed(1) + '°</div>';
-        html += '<div class="history-metric"><strong>Spin:</strong> ' + Math.round(session.data.spinRate) + '</div>';
-        if (session.data.aoa !== null) {
-            html += '<div class="history-metric"><strong>AoA:</strong> ' + (session.data.aoa > 0 ? '+' : '') + session.data.aoa.toFixed(1) + '°</div>';
+    getHistory().then(function (history) {
+        if (history.length === 0) {
+            historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions saved yet. Complete your first analysis to start tracking progress!</p>';
+            return;
         }
-        html += '</div>';
-        if (session.issues && session.issues.length > 0) {
-            html += '<div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px; font-size: 13px;"><strong style="color: #856404;">Top Issue:</strong> <span style="color: #856404;">' + escapeHtml(session.issues[0].title) + '</span></div>';
+        var filteredHistory = filter === 'all' ? history : history.filter(function (s) { return s.club === filter; });
+        if (filteredHistory.length === 0) {
+            historyContent.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 20px;">No sessions found for this club.</p>';
+            return;
         }
-        if (session.notes) {
-            html += '<div class="history-notes"><strong>Notes:</strong> ' + escapeHtml(session.notes) + '</div>';
-        }
-        html += '<button class="delete-session-btn" onclick="deleteSession(' + session.id + ')">Delete Session</button>';
-        html += '</div>'; /* close .history-item */
+        var html = '';
+        filteredHistory.forEach(function (session) {
+            var date = new Date(session.timestamp);
+            var dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            var clubName = getClubDisplayName(session.club, session.wedgeLoft);
+            var firestoreIdAttr = session.firestoreId ? ' data-firestore-id="' + escapeHtml(session.firestoreId) + '"' : '';
+            html += '<div class="history-item">';
+            html += '<div class="history-item-header"><div class="history-item-title">' + escapeHtml(clubName) + '</div><div class="history-item-date">' + escapeHtml(dateStr) + '</div></div>';
+            html += '<div class="history-metrics">';
+            html += '<div class="history-metric"><strong>Smash:</strong> ' + session.data.smash.toFixed(2) + '</div>';
+            html += '<div class="history-metric"><strong>Launch:</strong> ' + session.data.launchAngle.toFixed(1) + '°</div>';
+            html += '<div class="history-metric"><strong>Spin:</strong> ' + Math.round(session.data.spinRate) + '</div>';
+            if (session.data.aoa !== null) {
+                html += '<div class="history-metric"><strong>AoA:</strong> ' + (session.data.aoa > 0 ? '+' : '') + session.data.aoa.toFixed(1) + '°</div>';
+            }
+            html += '</div>';
+            if (session.issues && session.issues.length > 0) {
+                html += '<div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px; font-size: 13px;"><strong style="color: #856404;">Top Issue:</strong> <span style="color: #856404;">' + escapeHtml(session.issues[0].title) + '</span></div>';
+            }
+            if (session.notes) {
+                html += '<div class="history-notes"><strong>Notes:</strong> ' + escapeHtml(session.notes) + '</div>';
+            }
+            html += '<button class="delete-session-btn" data-session-id="' + session.id + '"' + firestoreIdAttr + ' onclick="deleteSession(parseInt(this.dataset.sessionId, 10), this.dataset.firestoreId || \'\')">Delete Session</button>';
+            html += '</div>';
+        });
+        historyContent.innerHTML = html;
     });
-    historyContent.innerHTML = html;
 }
 
 function filterHistory() {
@@ -124,16 +147,30 @@ function filterHistory() {
     displayHistory(filter);
 }
 
-function deleteSession(id) {
+function deleteSession(id, firestoreId) {
     if (!confirm('Are you sure you want to delete this session?')) return;
-    var history = getHistory();
-    var updatedHistory = history.filter(function (s) { return s.id !== id; });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
-    displayHistory(document.getElementById('historyClubFilter').value);
+    if (window.currentUser && window.CLOUD_STORAGE_ENABLED && firestoreId) {
+        window.deleteSessionFromCloud(firestoreId).then(function () {
+            displayHistory(document.getElementById('historyClubFilter').value);
+        });
+        return;
+    }
+    getHistory().then(function (history) {
+        var updatedHistory = history.filter(function (s) { return s.id !== id; });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+        displayHistory(document.getElementById('historyClubFilter').value);
+    });
 }
 
 function clearHistory() {
     if (!confirm('Are you sure you want to delete ALL session history? This cannot be undone.')) return;
+    if (window.currentUser && window.CLOUD_STORAGE_ENABLED) {
+        window.clearAllSessionsFromCloud().then(function () {
+            document.getElementById('historyClubFilter').value = 'all';
+            displayHistory('all');
+        });
+        return;
+    }
     localStorage.removeItem(STORAGE_KEY);
     document.getElementById('historyClubFilter').value = 'all';
     displayHistory('all');
