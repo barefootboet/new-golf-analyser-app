@@ -77,10 +77,17 @@ A personalized golf swing analyzer that provides focused improvement tips based 
 
 ```
 golf-analyzer/
-├── index.html              # Main application (rename from golf-analyzer-enhanced.html)
+├── index.html              # HTML structure only (links to CSS and JS)
+├── styles.css              # All styles
+├── config.js               # Club targets, storage keys, constants
+├── history.js              # Session history (localStorage, display, clear)
+├── analysis.js             # Analysis logic (targets, issues, results display)
+├── app.js                  # App entry (profile, validation, perform analysis)
 ├── README.md               # This file
-└── .gitignore             # Git ignore file
+└── .gitignore              # Git ignore file
 ```
+
+Scripts must load in order: `config.js` → `history.js` → `analysis.js` → `app.js`.
 
 ## Browser Support
 
